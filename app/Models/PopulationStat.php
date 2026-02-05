@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PopulationStat extends Model
 {
@@ -24,4 +25,14 @@ class PopulationStat extends Model
         'ano' => 'integer',
         'poblacion' => 'integer',
     ];
+
+    public function lugar(): BelongsTo
+    {
+        return $this->belongsTo(Lugar::class);
+    }
+
+    public function isla(): BelongsTo
+    {
+        return $this->belongsTo(Isla::class);
+    }
 }
