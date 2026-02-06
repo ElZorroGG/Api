@@ -16,24 +16,39 @@ class PopulationController extends Controller
             ->with(['lugar' => fn($q) => $q->select('id', 'nombre', 'isla_id')])
             ->whereNotNull('lugar_id');
 
+        // Filtro por nombre de municipio
+        if ($request->has('municipio')) {
+            $nombreMunicipio = $request->get('municipio');
+            $lugarIds = Lugar::where('nombre', 'LIKE', "%{$nombreMunicipio}%")->pluck('id');
+            $query->whereIn('lugar_id', $lugarIds);
+        }
+
         // Aplicar filtros
         $this->applyFilters($query, $request);
 
-        $data = $query->groupBy('lugar_id')
-            ->selectRaw('lugar_id, SUM(poblacion) as total_poblacion')
-            ->with('lugar')
-            ->get()
-            ->map(fn($item) => [
-                'lugar_id' => $item->lugar_id,
-                'municipio' => $item->lugar->nombre ?? 'N/A',
-                'isla_id' => $item->lugar->isla_id,
-                'total_poblacion' => $item->total_poblacion,
-            ]);
+        $allData = $query->get();
+        $maxAno = $allData->max('ano');
+
+        $data = $allData->groupBy('lugar_id')
+            ->map(function ($group) use ($maxAno) {
+                $lugar = $group->first()->lugar;
+                $poblacionUltimoAno = (int) $group->where('ano', $maxAno)->sum('poblacion');
+                $sumaPoblacion = (int) $group->sum('poblacion');
+
+                return [
+                    'lugar_id' => $group->first()->lugar_id,
+                    'municipio' => $lugar->nombre ?? 'N/A',
+                    'isla_id' => $lugar->isla_id,
+                    'total_poblacion' => $poblacionUltimoAno,
+                    'ultimo_ano' => $maxAno,
+                    'suma_poblacion' => $sumaPoblacion,
+                ];
+            });
 
         // Ordenar alfabéticamente por defecto
         $orderBy = $request->get('order_by', 'municipio');
         $order = $request->get('order', 'asc');
-        
+
         if ($orderBy === 'municipio') {
             $data = ($order === 'desc')
                 ? $data->sortByDesc(fn($item) => $item['municipio'])
@@ -42,13 +57,77 @@ class PopulationController extends Controller
             $data = ($order === 'desc')
                 ? $data->sortByDesc(fn($item) => $item['total_poblacion'])
                 : $data->sortBy(fn($item) => $item['total_poblacion']);
+        } elseif ($orderBy === 'suma_poblacion') {
+            $data = ($order === 'desc')
+                ? $data->sortByDesc(fn($item) => $item['suma_poblacion'])
+                : $data->sortBy(fn($item) => $item['suma_poblacion']);
         }
 
-        return response()->json([
+        $response = [
             'success' => true,
             'data' => $data->values(),
+            'ultimo_ano' => $maxAno,
             'total' => (int) $data->sum('total_poblacion'),
-        ]);
+            'suma_total' => (int) $data->sum('suma_poblacion'),
+            'filtros_aplicados' => [],
+        ];
+
+        // Mostrar filtro de municipio si se aplicó
+        if ($request->has('municipio')) {
+            $response['filtros_aplicados']['municipio'] = $request->get('municipio');
+        }
+
+        // Mostrar filtro de género si se aplicó
+        if ($request->has('genero')) {
+            $response['filtros_aplicados']['genero'] = $request->get('genero');
+        }
+
+        // Mostrar filtro de año si se aplicó
+        if ($request->has('ano')) {
+            $response['filtros_aplicados']['ano'] = $request->get('ano');
+        }
+
+        // Mostrar rangos de edad aplicados si se filtró por rango
+        if ($request->has('edad_min') && $request->has('edad_max')) {
+            $edadMin = (int) $request->get('edad_min');
+            $edadMax = (int) $request->get('edad_max');
+
+            $edades = PopulationStat::distinct('edad')
+                ->whereNotNull('edad')
+                ->pluck('edad')
+                ->toArray();
+
+            $edadesAplicadas = array_values(array_filter($edades, function ($edad) use ($edadMin, $edadMax) {
+                // Formato rango: "De X a Y años"
+                if (preg_match('/De\s+(\d+)\s+a\s+(\d+)/', $edad, $matches)) {
+                    $rangeMin = (int) $matches[1];
+                    $rangeMax = (int) $matches[2];
+                    return !($rangeMax < $edadMin || $rangeMin > $edadMax);
+                }
+                // Formato abierto: "X años o más"
+                if (preg_match('/(\d+)\s+años\s+o\s+más/', $edad, $matches)) {
+                    $val = (int) $matches[1];
+                    return $val <= $edadMax;
+                }
+                // Formato individual: "X años" o "X año"
+                if (preg_match('/^(\d+)\s+años?$/', $edad, $matches)) {
+                    $val = (int) $matches[1];
+                    return $val >= $edadMin && $val <= $edadMax;
+                }
+                return false;
+            }));
+
+            sort($edadesAplicadas);
+            $response['filtros_aplicados']['rango_edad_solicitado'] = "De {$edadMin} a {$edadMax} años";
+            $response['filtros_aplicados']['rangos_edad_aplicados'] = $edadesAplicadas;
+        }
+
+        // Si no hay filtros, quitar el campo
+        if (empty($response['filtros_aplicados'])) {
+            unset($response['filtros_aplicados']);
+        }
+
+        return response()->json($response);
     }
 
     public function getIslandPopulation(Request $request)
@@ -59,24 +138,33 @@ class PopulationController extends Controller
             return $this->getIslandPopulationByMunicipality($request);
         }
 
-        $query = PopulationStat::query();
+        $query = PopulationStat::query()
+            ->with(['isla' => fn($q) => $q->select('id', 'nombre')])
+            ->whereNotNull('isla_id');
         $this->applyFilters($query, $request);
 
-        $data = $query->groupBy('isla_id')
-            ->selectRaw('isla_id, SUM(poblacion) as total_poblacion')
-            ->with(['isla' => fn($q) => $q->select('id', 'nombre')])
-            ->whereNotNull('isla_id')
-            ->get()
-            ->map(fn($item) => [
-                'isla_id' => $item->isla_id,
-                'isla' => $item->isla->nombre ?? 'N/A',
-                'total_poblacion' => $item->total_poblacion,
-            ]);
+        $allData = $query->get();
+        $maxAno = $allData->max('ano');
+
+        $data = $allData->groupBy('isla_id')
+            ->map(function ($group) use ($maxAno) {
+                $isla = $group->first()->isla;
+                $poblacionUltimoAno = (int) $group->where('ano', $maxAno)->sum('poblacion');
+                $sumaPoblacion = (int) $group->sum('poblacion');
+
+                return [
+                    'isla_id' => $group->first()->isla_id,
+                    'isla' => $isla->nombre ?? 'N/A',
+                    'total_poblacion' => $poblacionUltimoAno,
+                    'ultimo_ano' => $maxAno,
+                    'suma_poblacion' => $sumaPoblacion,
+                ];
+            });
 
         // Ordenar alfabéticamente por defecto
         $orderBy = $request->get('order_by', 'isla');
         $order = $request->get('order', 'asc');
-        
+
         if ($orderBy === 'isla') {
             $data = ($order === 'desc')
                 ? $data->sortByDesc(fn($item) => $item['isla'])
@@ -85,12 +173,18 @@ class PopulationController extends Controller
             $data = ($order === 'desc')
                 ? $data->sortByDesc(fn($item) => $item['total_poblacion'])
                 : $data->sortBy(fn($item) => $item['total_poblacion']);
+        } elseif ($orderBy === 'suma_poblacion') {
+            $data = ($order === 'desc')
+                ? $data->sortByDesc(fn($item) => $item['suma_poblacion'])
+                : $data->sortBy(fn($item) => $item['suma_poblacion']);
         }
 
         return response()->json([
             'success' => true,
             'data' => $data->values(),
+            'ultimo_ano' => $maxAno,
             'total' => (int) $data->sum('total_poblacion'),
+            'suma_total' => (int) $data->sum('suma_poblacion'),
         ]);
     }
 
@@ -106,16 +200,23 @@ class PopulationController extends Controller
         $this->applyFilters($query, $request);
 
         $allData = $query->get();
-        
+        $maxAno = $allData->max('ano');
+
         $data = $allData->groupBy(fn($item) => $item->isla->nombre ?? 'N/A')
-            ->map(function($municipios, $islandName) {
+            ->map(function($municipios, $islandName) use ($maxAno) {
                 return [
                     'isla' => $islandName,
                     'municipios' => $municipios->groupBy('lugar_id')
-                        ->map(fn($group) => [
-                            'municipio' => $group->first()->lugar->nombre ?? 'N/A',
-                            'total_poblacion' => $group->sum('poblacion'),
-                        ])
+                        ->map(function ($group) use ($maxAno) {
+                            $poblacionUltimoAno = (int) $group->where('ano', $maxAno)->sum('poblacion');
+                            $sumaPoblacion = (int) $group->sum('poblacion');
+                            return [
+                                'municipio' => $group->first()->lugar->nombre ?? 'N/A',
+                                'total_poblacion' => $poblacionUltimoAno,
+                                'ultimo_ano' => $maxAno,
+                                'suma_poblacion' => $sumaPoblacion,
+                            ];
+                        })
                         ->values(),
                 ];
             });
@@ -133,10 +234,14 @@ class PopulationController extends Controller
             return $island;
         });
 
+        $latestYearTotal = (int) $allData->where('ano', $maxAno)->sum('poblacion');
+
         return response()->json([
             'success' => true,
             'data' => $data->sortBy('isla')->values(),
-            'total' => (int) $allData->sum('poblacion'),
+            'ultimo_ano' => $maxAno,
+            'total' => $latestYearTotal,
+            'suma_total' => (int) $allData->sum('poblacion'),
         ]);
     }
 
@@ -370,10 +475,21 @@ class PopulationController extends Controller
                 ->toArray();
             
             $edadesValidas = array_filter($edades, function($edad) use ($edadMin, $edadMax) {
-                if (preg_match('/^(\d+)[\s\-]+(\d+)/', $edad, $matches)) {
+                // Formato rango: "De X a Y años"
+                if (preg_match('/De\s+(\d+)\s+a\s+(\d+)/', $edad, $matches)) {
                     $rangeMin = (int)$matches[1];
                     $rangeMax = (int)$matches[2];
                     return !($rangeMax < $edadMin || $rangeMin > $edadMax);
+                }
+                // Formato abierto: "X años o más"
+                if (preg_match('/(\d+)\s+años\s+o\s+más/', $edad, $matches)) {
+                    $val = (int)$matches[1];
+                    return $val <= $edadMax;
+                }
+                // Formato individual: "X años" o "X año"
+                if (preg_match('/^(\d+)\s+años?$/', $edad, $matches)) {
+                    $val = (int)$matches[1];
+                    return $val >= $edadMin && $val <= $edadMax;
                 }
                 return false;
             });
@@ -413,6 +529,13 @@ class PopulationController extends Controller
      *      tags={"Población"},
      *      summary="Obtener población por municipios",
      *      description="Devuelve datos de población agrupados por municipio. Por defecto ordenados alfabéticamente. Soporta múltiples filtros que pueden combinarse.",
+     *      @OA\Parameter(
+     *          name="municipio",
+     *          in="query",
+     *          description="Filtrar por nombre de municipio (búsqueda parcial, case-insensitive)",
+     *          required=false,
+     *          @OA\Schema(type="string", example="Santa Cruz")
+     *      ),
      *      @OA\Parameter(
      *          name="genero",
      *          in="query",
@@ -483,7 +606,9 @@ class PopulationController extends Controller
      *              type="object",
      *              @OA\Property(property="success", type="boolean", example=true),
      *              @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/MunicipioResponse")),
-     *              @OA\Property(property="total", type="integer", example=2267239, description="Población total agregada")
+     *              @OA\Property(property="ultimo_ano", type="integer", example=2025, description="Último año con datos disponibles"),
+     *              @OA\Property(property="total", type="integer", example=2267239, description="Población total del último año"),
+     *              @OA\Property(property="suma_total", type="integer", example=11336195, description="Suma de población acumulada de todos los años")
      *          )
      *      ),
      *      @OA\Response(response=400, description="Parámetros inválidos"),
@@ -547,7 +672,9 @@ class PopulationController extends Controller
      *              type="object",
      *              @OA\Property(property="success", type="boolean", example=true),
      *              @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/IslaResponse")),
-     *              @OA\Property(property="total", type="integer", example=2267239)
+     *              @OA\Property(property="ultimo_ano", type="integer", example=2025, description="Último año con datos disponibles"),
+     *              @OA\Property(property="total", type="integer", example=2267239, description="Población total del último año"),
+     *              @OA\Property(property="suma_total", type="integer", example=11336195, description="Suma de población acumulada de todos los años")
      *          )
      *      )
      * )

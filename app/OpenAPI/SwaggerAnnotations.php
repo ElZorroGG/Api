@@ -33,7 +33,9 @@ namespace App\OpenAPI;
  *      @OA\Property(property="lugar_id", type="integer", example=72, description="ID único del municipio"),
  *      @OA\Property(property="municipio", type="string", example="Santa Cruz de Tenerife", description="Nombre del municipio"),
  *      @OA\Property(property="isla_id", type="integer", example=5, description="ID de la isla a la que pertenece"),
- *      @OA\Property(property="total_poblacion", type="integer", example=678727, description="Población total del municipio")
+ *      @OA\Property(property="total_poblacion", type="integer", example=678727, description="Población del municipio en el último año disponible"),
+ *      @OA\Property(property="ultimo_ano", type="integer", example=2025, description="Último año con datos disponibles"),
+ *      @OA\Property(property="suma_poblacion", type="integer", example=3393635, description="Suma acumulada de población de todos los años")
  * )
  *
  * @OA\Schema(
@@ -41,7 +43,9 @@ namespace App\OpenAPI;
  *      type="object",
  *      @OA\Property(property="isla_id", type="integer", example=5, description="ID único de la isla"),
  *      @OA\Property(property="isla", type="string", example="Tenerife", description="Nombre de la isla"),
- *      @OA\Property(property="total_poblacion", type="integer", example=928212345, description="Población total de la isla")
+ *      @OA\Property(property="total_poblacion", type="integer", example=928604, description="Población de la isla en el último año disponible"),
+ *      @OA\Property(property="ultimo_ano", type="integer", example=2025, description="Último año con datos disponibles"),
+ *      @OA\Property(property="suma_poblacion", type="integer", example=4643020, description="Suma acumulada de población de todos los años")
  * )
  *
  * @OA\Schema(
