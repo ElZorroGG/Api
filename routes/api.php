@@ -15,7 +15,7 @@ Route::prefix('population')->group(function () {
     // Población por isla
     Route::get('/islands', [PopulationController::class, 'getIslandPopulation']);
     
-    // Evolución de población
+    // Evolución de población por municipio o isla
     Route::get('/evolution', [PopulationController::class, 'getPopulationEvolution']);
     
     // Búsqueda de municipios e islas

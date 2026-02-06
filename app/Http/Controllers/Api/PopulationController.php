@@ -39,15 +39,19 @@ class PopulationController extends Controller
         $order = $request->get('order', 'asc');
         
         if ($orderBy === 'municipio') {
-            $data = $data->sortBy(fn($item) => $item['municipio'], SORT_REGULAR, $order === 'desc');
+            $data = ($order === 'desc')
+                ? $data->sortByDesc(fn($item) => $item['municipio'])
+                : $data->sortBy(fn($item) => $item['municipio']);
         } elseif ($orderBy === 'total_poblacion') {
-            $data = $data->sortBy(fn($item) => $item['total_poblacion'], SORT_NUMERIC, $order === 'desc');
+            $data = ($order === 'desc')
+                ? $data->sortByDesc(fn($item) => $item['total_poblacion'])
+                : $data->sortBy(fn($item) => $item['total_poblacion']);
         }
 
         return response()->json([
             'success' => true,
             'data' => $data->values(),
-            'total' => $data->sum('total_poblacion'),
+            'total' => (int) $data->sum('total_poblacion'),
         ]);
     }
 
@@ -82,15 +86,19 @@ class PopulationController extends Controller
         $order = $request->get('order', 'asc');
         
         if ($orderBy === 'isla') {
-            $data = $data->sortBy(fn($item) => $item['isla'], SORT_REGULAR, $order === 'desc');
+            $data = ($order === 'desc')
+                ? $data->sortByDesc(fn($item) => $item['isla'])
+                : $data->sortBy(fn($item) => $item['isla']);
         } elseif ($orderBy === 'total_poblacion') {
-            $data = $data->sortBy(fn($item) => $item['total_poblacion'], SORT_NUMERIC, $order === 'desc');
+            $data = ($order === 'desc')
+                ? $data->sortByDesc(fn($item) => $item['total_poblacion'])
+                : $data->sortBy(fn($item) => $item['total_poblacion']);
         }
 
         return response()->json([
             'success' => true,
             'data' => $data->values(),
-            'total' => $data->sum('total_poblacion'),
+            'total' => (int) $data->sum('total_poblacion'),
         ]);
     }
 
@@ -105,24 +113,26 @@ class PopulationController extends Controller
 
         $this->applyFilters($query, $request);
 
-        $data = $query->groupBy(['isla_id', 'lugar_id'])
-            ->selectRaw('isla_id, lugar_id, SUM(poblacion) as total_poblacion')
-            ->get()
-            ->groupBy(fn($item) => $item->isla->nombre ?? 'N/A')
+        $allData = $query->get();
+        
+        $data = $allData->groupBy(fn($item) => $item->isla->nombre ?? 'N/A')
             ->map(function($municipios, $islandName) {
                 return [
                     'isla' => $islandName,
-                    'municipios' => $municipios->map(fn($m) => [
-                        'municipio' => $m->lugar->nombre ?? 'N/A',
-                        'total_poblacion' => $m->total_poblacion,
-                    ])->sortBy('municipio')->values(),
+                    'municipios' => $municipios->groupBy('lugar_id')
+                        ->map(fn($group) => [
+                            'municipio' => $group->first()->lugar->nombre ?? 'N/A',
+                            'total_poblacion' => $group->sum('poblacion'),
+                        ])
+                        ->sortBy('municipio')
+                        ->values(),
                 ];
             });
 
         return response()->json([
             'success' => true,
             'data' => $data->sortBy('isla')->values(),
-            'total' => PopulationStat::sum('poblacion'),
+            'total' => (int) $allData->sum('poblacion'),
         ]);
     }
 
@@ -134,9 +144,30 @@ class PopulationController extends Controller
     {
         $type = $request->get('type', 'municipality'); // municipality o island
         $entityId = $request->get('id'); // lugar_id o isla_id
+        $breakdown = $request->get('breakdown') === 'true'; // Desglose por municipio si type=island
 
         if (!$entityId) {
             return response()->json(['error' => 'ID is required'], 400);
+        }
+
+        // Validar que la entidad existe
+        if ($type === 'island') {
+            $isla = Isla::find($entityId);
+            if (!$isla) {
+                return response()->json(['error' => 'Island not found'], 404);
+            }
+            $entityName = $isla->nombre;
+        } else {
+            $lugar = Lugar::find($entityId);
+            if (!$lugar) {
+                return response()->json(['error' => 'Municipality not found'], 404);
+            }
+            $entityName = $lugar->nombre;
+        }
+
+        // Si es isla Y pide desglose por municipio
+        if ($type === 'island' && $breakdown) {
+            return $this->getIslandEvolutionByMunicipality($entityId, $request);
         }
 
         $groupBy = ($type === 'island') ? 'isla_id' : 'lugar_id';
@@ -158,16 +189,80 @@ class PopulationController extends Controller
         $evolution = $data->map(function($item) use ($firstPopulation) {
             return [
                 'ano' => $item->ano,
-                'poblacion' => $item->poblacion,
+                'poblacion' => (int) $item->poblacion,
                 'porcentaje_cambio' => round((($item->poblacion - $firstPopulation) / $firstPopulation) * 100, 2),
             ];
         });
 
         return response()->json([
             'success' => true,
+            'entity_type' => $type,
+            'entity_id' => $entityId,
+            'entity_name' => $entityName,
             'data' => $evolution,
-            'total_inicial' => $firstPopulation,
-            'total_final' => $data->last()->poblacion,
+            'total_inicial' => (int) $firstPopulation,
+            'total_final' => (int) $data->last()->poblacion,
+        ]);
+    }
+
+    /**
+     * Obtener evolución de una isla desglosada por municipios
+     */
+    private function getIslandEvolutionByMunicipality($islaId, Request $request)
+    {
+        $isla = Isla::find($islaId);
+        
+        $query = PopulationStat::query()
+            ->where('isla_id', $islaId)
+            ->whereNotNull('lugar_id')
+            ->with('lugar')
+            ->orderBy('ano');
+
+        $this->applyFilters($query, $request);
+
+        $allData = $query->get();
+
+        if ($allData->isEmpty()) {
+            return response()->json(['error' => 'No data found'], 404);
+        }
+
+        // Agrupar por municipio y año
+        $evolutionByMunicipality = $allData->groupBy(fn($item) => $item->lugar->nombre)
+            ->map(function($municipilityData, $municipilityName) {
+                $byYear = $municipilityData->groupBy('ano')
+                    ->map(fn($group) => [
+                        'ano' => $group->first()->ano,
+                        'poblacion' => (int) $group->sum('poblacion'),
+                    ])
+                    ->sortBy('ano')
+                    ->values();
+
+                $firstPopulation = $byYear->first()['poblacion'];
+                $evolution = $byYear->map(function($item) use ($firstPopulation) {
+                    return [
+                        'ano' => $item['ano'],
+                        'poblacion' => $item['poblacion'],
+                        'porcentaje_cambio' => round((($item['poblacion'] - $firstPopulation) / $firstPopulation) * 100, 2),
+                    ];
+                });
+
+                return [
+                    'municipio' => $municipilityName,
+                    'total_inicial' => $firstPopulation,
+                    'total_final' => $evolution->last()['poblacion'],
+                    'datos' => $evolution,
+                ];
+            })
+            ->sortBy('municipio')
+            ->values();
+
+        return response()->json([
+            'success' => true,
+            'entity_type' => 'island',
+            'entity_id' => $islaId,
+            'entity_name' => $isla->nombre,
+            'breakdown' => 'by_municipality',
+            'data' => $evolutionByMunicipality,
         ]);
     }
 
@@ -264,9 +359,34 @@ class PopulationController extends Controller
             $query->where('edad', $request->get('edad'));
         }
 
-        // Filtro por rango de edad (simplificado)
+        // Filtro por rango de edad
+        // Formato esperado de edad en BD: "0-5", "5-10", "10-15", etc.
+        // edad_min y edad_max especifican el rango deseado
         if ($request->has('edad_min') && $request->has('edad_max')) {
-            // Aquí puedes implementar lógica más compleja si los datos lo permiten
+            $edadMin = (int)$request->get('edad_min');
+            $edadMax = (int)$request->get('edad_max');
+            
+            // Obtener todos los valores de edad disponibles
+            $edades = PopulationStat::distinct('edad')
+                ->whereNotNull('edad')
+                ->pluck('edad')
+                ->toArray();
+            
+            // Filtrar edades que se solapan con el rango solicitado
+            $edadesValidas = array_filter($edades, function($edad) use ($edadMin, $edadMax) {
+                // Parsear rangos como "0-5", "5-10", etc.
+                if (preg_match('/^(\d+)[\s\-]+(\d+)/', $edad, $matches)) {
+                    $rangeMin = (int)$matches[1];
+                    $rangeMax = (int)$matches[2];
+                    // Verificar si el rango se solapa con el rango solicitado
+                    return !($rangeMax < $edadMin || $rangeMin > $edadMax);
+                }
+                return false;
+            });
+            
+            if (!empty($edadesValidas)) {
+                $query->whereIn('edad', $edadesValidas);
+            }
         }
 
         // Filtro por año
