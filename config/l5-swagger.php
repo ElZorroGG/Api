@@ -45,6 +45,7 @@ return [
                  */
                 'annotations' => [
                     base_path('app/OpenAPI'),
+                    base_path('app/Http/Controllers'),
                 ],
             ],
         ],
@@ -109,7 +110,10 @@ return [
              */
             'default_processors_configuration' => [
             ],
-            'analyser' => null,
+            'analyser' => new \OpenApi\Analysers\ReflectionAnalyser([
+                new \OpenApi\Analysers\AttributeAnnotationFactory(),
+                new \OpenApi\Analysers\DocBlockAnnotationFactory(),
+            ]),
 
             /**
              * analysis: defaults to a new \OpenApi\Analysis .

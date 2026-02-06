@@ -1,428 +1,649 @@
 {
-  "openapi": "3.0.0",
-  "info": {
-    "title": "Population API",
-    "version": "1.0.0",
-    "description": "API para acceder a datos demográficos de población",
-    "contact": {
-      "name": "API Support"
+    "openapi": "3.0.0",
+    "info": {
+        "title": "API de Población - Canarias",
+        "description": "API REST para consultar datos demográficos de población de las Islas Canarias. Proporciona información sobre población por municipios, islas, evolución histórica y opciones avanzadas de búsqueda y filtrado.",
+        "contact": {
+            "name": "API Support",
+            "email": "api@canarias.es"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        "version": "1.0.0"
     },
-    "license": {
-      "name": "MIT"
-    }
-  },
-  "servers": [
-    {
-      "url": "http://localhost:8000",
-      "description": "Development Server"
-    }
-  ],
-  "tags": [
-    {
-      "name": "Población",
-      "description": "Endpoints para consultar datos de población"
-    }
-  ],
-  "paths": {
-    "/api/population/municipalities": {
-      "get": {
-        "operationId": "getMunicipalityPopulation",
-        "tags": ["Población"],
-        "summary": "Obtener población por municipios",
-        "description": "Devuelve datos de población agrupados por municipio",
-        "parameters": [
-          {
-            "name": "genero",
-            "in": "query",
-            "description": "Filtrar por género (Hombres/Mujeres)",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "edad",
-            "in": "query",
-            "description": "Filtrar por edad específica",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "ano",
-            "in": "query",
-            "description": "Filtrar por año (ej 2024)",
-            "required": false,
-            "schema": {
-              "type": "integer"
-            }
-          },
-          {
-            "name": "ano_desde",
-            "in": "query",
-            "description": "Año inicial para rango",
-            "required": false,
-            "schema": {
-              "type": "integer"
-            }
-          },
-          {
-            "name": "ano_hasta",
-            "in": "query",
-            "description": "Año final para rango",
-            "required": false,
-            "schema": {
-              "type": "integer"
-            }
-          },
-          {
-            "name": "order_by",
-            "in": "query",
-            "description": "Ordenar por (municipio/total_poblacion)",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "default": "municipio"
-            }
-          },
-          {
-            "name": "order",
-            "in": "query",
-            "description": "Orden (asc/desc)",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "default": "asc"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Población por municipios",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "lugar_id": {
-                            "type": "integer"
-                          },
-                          "municipio": {
-                            "type": "string"
-                          },
-                          "isla_id": {
-                            "type": "integer"
-                          },
-                          "total_poblacion": {
-                            "type": "integer"
-                          }
-                        }
-                      }
-                    },
-                    "total": {
-                      "type": "integer"
-                    }
-                  }
-                }
-              }
-            }
-          }
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "Development Server (Local)"
         }
-      }
+    ],
+    "paths": {
+        "/api/population/municipalities": {
+            "get": {
+                "tags": [
+                    "Población"
+                ],
+                "summary": "Obtener población por municipios",
+                "description": "Devuelve datos de población agrupados por municipio. Por defecto ordenados alfabéticamente. Soporta múltiples filtros que pueden combinarse.",
+                "operationId": "getMunicipalityPopulation",
+                "parameters": [
+                    {
+                        "name": "genero",
+                        "in": "query",
+                        "description": "Filtrar por género",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "Hombres",
+                                "Mujeres"
+                            ],
+                            "example": "Hombres"
+                        }
+                    },
+                    {
+                        "name": "edad",
+                        "in": "query",
+                        "description": "Filtrar por edad o rango de edad específico",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "De 0 a 14 años"
+                        }
+                    },
+                    {
+                        "name": "edad_min",
+                        "in": "query",
+                        "description": "Edad mínima (filtra rangos que se solapan)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 18
+                        }
+                    },
+                    {
+                        "name": "edad_max",
+                        "in": "query",
+                        "description": "Edad máxima (filtra rangos que se solapan)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 65
+                        }
+                    },
+                    {
+                        "name": "ano",
+                        "in": "query",
+                        "description": "Filtrar por año (puede usarse múltiples veces)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 2024
+                        }
+                    },
+                    {
+                        "name": "ano_desde",
+                        "in": "query",
+                        "description": "Año inicial del rango",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 2022
+                        }
+                    },
+                    {
+                        "name": "ano_hasta",
+                        "in": "query",
+                        "description": "Año final del rango",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 2024
+                        }
+                    },
+                    {
+                        "name": "order_by",
+                        "in": "query",
+                        "description": "Campo para ordenar los resultados",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "municipio",
+                            "enum": [
+                                "municipio",
+                                "total_poblacion"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "order",
+                        "in": "query",
+                        "description": "Dirección del ordenamiento",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "asc",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de municipios con población",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/MunicipioResponse"
+                                            }
+                                        },
+                                        "total": {
+                                            "description": "Población total agregada",
+                                            "type": "integer",
+                                            "example": 2267239
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Parámetros inválidos"
+                    },
+                    "500": {
+                        "description": "Error interno del servidor"
+                    }
+                }
+            }
+        },
+        "/api/population/islands": {
+            "get": {
+                "tags": [
+                    "Población"
+                ],
+                "summary": "Obtener población por islas",
+                "description": "Devuelve datos de población agrupados por isla. Puede retornar totales por isla o desglose por municipios dentro de cada isla.",
+                "operationId": "getIslandPopulation",
+                "parameters": [
+                    {
+                        "name": "breakdown",
+                        "in": "query",
+                        "description": "Desglose por municipio (true para incluir municipios de cada isla)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "true",
+                                "false"
+                            ],
+                            "example": "true"
+                        }
+                    },
+                    {
+                        "name": "genero",
+                        "in": "query",
+                        "description": "Filtrar por género",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "Hombres",
+                                "Mujeres"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "edad",
+                        "in": "query",
+                        "description": "Filtrar por edad",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "ano",
+                        "in": "query",
+                        "description": "Filtrar por año",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "order_by",
+                        "in": "query",
+                        "description": "Campo para ordenar",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "isla",
+                            "enum": [
+                                "isla",
+                                "total_poblacion"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "order",
+                        "in": "query",
+                        "description": "Dirección del ordenamiento",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "asc",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Datos de población por isla",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/IslaResponse"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "example": 2267239
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/population/evolution": {
+            "get": {
+                "tags": [
+                    "Población"
+                ],
+                "summary": "Obtener evolución de población",
+                "description": "Devuelve la evolución de población año a año en porcentajes y totales. Puede retornar datos de un municipio, una isla, o una isla desglosada por municipios.",
+                "operationId": "getPopulationEvolution",
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "Tipo de entidad",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "municipality",
+                                "island"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "description": "ID de la entidad (lugar_id o isla_id)",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 72
+                        }
+                    },
+                    {
+                        "name": "breakdown",
+                        "in": "query",
+                        "description": "Desglose por municipio (solo válido cuando type=island)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "true",
+                                "false"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "genero",
+                        "in": "query",
+                        "description": "Filtrar por género",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "Hombres",
+                                "Mujeres"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "edad",
+                        "in": "query",
+                        "description": "Filtrar por edad",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "ano",
+                        "in": "query",
+                        "description": "Filtrar por año",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Evolución de población",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "entity_type": {
+                                            "type": "string",
+                                            "example": "municipality"
+                                        },
+                                        "entity_id": {
+                                            "type": "integer",
+                                            "example": 72
+                                        },
+                                        "entity_name": {
+                                            "type": "string",
+                                            "example": "Santa Cruz de Tenerife"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/EvolutionItem"
+                                            }
+                                        },
+                                        "total_inicial": {
+                                            "type": "integer",
+                                            "example": 665097
+                                        },
+                                        "total_final": {
+                                            "type": "integer",
+                                            "example": 678727
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Parámetros requeridos faltantes"
+                    },
+                    "404": {
+                        "description": "Municipio o isla no encontrada"
+                    }
+                }
+            }
+        },
+        "/api/population/search": {
+            "get": {
+                "tags": [
+                    "Población"
+                ],
+                "summary": "Buscar municipios o islas",
+                "description": "Realiza una búsqueda flexible de municipios e islas usando un término de búsqueda. La búsqueda es case-insensitive y retorna resultados ordenados alfabéticamente.",
+                "operationId": "searchPopulation",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Término de búsqueda (mínimo 2 caracteres)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "minLength": 2,
+                            "example": "Santa"
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "Tipo de entidad a buscar",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "all",
+                            "enum": [
+                                "all",
+                                "municipalities",
+                                "islands"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Resultados de búsqueda",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "query": {
+                                            "type": "string",
+                                            "example": "Santa"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/SearchResult"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "El término de búsqueda debe tener al menos 2 caracteres"
+                    }
+                }
+            }
+        },
+        "/api/population/filters": {
+            "get": {
+                "tags": [
+                    "Población"
+                ],
+                "summary": "Obtener filtros disponibles",
+                "description": "Retorna los valores disponibles para cada tipo de filtro: género, edad, y años. Útil para construir interfaces de usuario con opciones válidas.",
+                "operationId": "getAvailableFilters",
+                "responses": {
+                    "200": {
+                        "description": "Filtros y valores disponibles",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "filters": {
+                                            "properties": {
+                                                "genero": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    },
+                                                    "example": [
+                                                        "Hombres",
+                                                        "Mujeres"
+                                                    ]
+                                                },
+                                                "edad": {
+                                                    "description": "Incluye edades individuales y rangos",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "anos": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "integer"
+                                                    },
+                                                    "example": [
+                                                        2021,
+                                                        2022,
+                                                        2023,
+                                                        2024,
+                                                        2025
+                                                    ]
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     },
-    "/api/population/islands": {
-      "get": {
-        "operationId": "getIslandPopulation",
-        "tags": ["Población"],
-        "summary": "Obtener población por islas",
-        "description": "Devuelve datos de población agrupados por isla",
-        "parameters": [
-          {
-            "name": "genero",
-            "in": "query",
-            "description": "Filtrar por género",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "edad",
-            "in": "query",
-            "description": "Filtrar por edad",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "ano",
-            "in": "query",
-            "description": "Filtrar por año",
-            "required": false,
-            "schema": {
-              "type": "integer"
-            }
-          },
-          {
-            "name": "breakdown",
-            "in": "query",
-            "description": "Desglose por municipios (true/false)",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "order_by",
-            "in": "query",
-            "description": "Ordenar por (isla/total_poblacion)",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "default": "isla"
-            }
-          },
-          {
-            "name": "order",
-            "in": "query",
-            "description": "Orden (asc/desc)",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "default": "asc"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Población por islas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
+    "components": {
+        "schemas": {
+            "MunicipioResponse": {
+                "properties": {
+                    "lugar_id": {
+                        "description": "ID único del municipio",
+                        "type": "integer",
+                        "example": 72
                     },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "isla_id": {
-                            "type": "integer"
-                          },
-                          "isla": {
-                            "type": "string"
-                          },
-                          "total_poblacion": {
-                            "type": "integer"
-                          }
-                        }
-                      }
+                    "municipio": {
+                        "description": "Nombre del municipio",
+                        "type": "string",
+                        "example": "Santa Cruz de Tenerife"
                     },
-                    "total": {
-                      "type": "integer"
+                    "isla_id": {
+                        "description": "ID de la isla a la que pertenece",
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "total_poblacion": {
+                        "description": "Población total del municipio",
+                        "type": "integer",
+                        "example": 678727
                     }
-                  }
-                }
-              }
+                },
+                "type": "object"
+            },
+            "IslaResponse": {
+                "properties": {
+                    "isla_id": {
+                        "description": "ID único de la isla",
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "isla": {
+                        "description": "Nombre de la isla",
+                        "type": "string",
+                        "example": "Tenerife"
+                    },
+                    "total_poblacion": {
+                        "description": "Población total de la isla",
+                        "type": "integer",
+                        "example": 928212345
+                    }
+                },
+                "type": "object"
+            },
+            "EvolutionItem": {
+                "properties": {
+                    "ano": {
+                        "description": "Año del registro",
+                        "type": "integer",
+                        "example": 2021
+                    },
+                    "poblacion": {
+                        "description": "Población en ese año",
+                        "type": "integer",
+                        "example": 665097
+                    },
+                    "porcentaje_cambio": {
+                        "description": "Porcentaje de cambio respecto al primer año",
+                        "type": "number",
+                        "format": "float",
+                        "example": 0
+                    }
+                },
+                "type": "object"
+            },
+            "SearchResult": {
+                "properties": {
+                    "id": {
+                        "description": "ID de la entidad",
+                        "type": "integer",
+                        "example": 72
+                    },
+                    "nombre": {
+                        "description": "Nombre de la entidad",
+                        "type": "string",
+                        "example": "Santa Cruz de Tenerife"
+                    },
+                    "tipo": {
+                        "description": "Tipo de entidad (municipio o isla)",
+                        "type": "string",
+                        "example": "municipio"
+                    },
+                    "isla": {
+                        "description": "Nombre de la isla (solo para municipios)",
+                        "type": "string",
+                        "example": "Tenerife",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
             }
-          }
         }
-      }
     },
-    "/api/population/evolution": {
-      "get": {
-        "operationId": "getPopulationEvolution",
-        "tags": ["Población"],
-        "summary": "Obtener evolución de población",
-        "description": "Devuelve la evolución de población por año",
-        "parameters": [
-          {
-            "name": "type",
-            "in": "query",
-            "description": "Tipo (municipality/island)",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "id",
-            "in": "query",
-            "description": "ID de municipio o isla",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Evolución de población",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "ano": {
-                            "type": "integer"
-                          },
-                          "poblacion": {
-                            "type": "integer"
-                          },
-                          "porcentaje_cambio": {
-                            "type": "number"
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Parámetros requeridos faltantes"
-          },
-          "404": {
-            "description": "Recurso no encontrado"
-          }
+    "tags": [
+        {
+            "name": "Población",
+            "description": "Endpoints para consultar datos de población"
         }
-      }
-    },
-    "/api/population/search": {
-      "get": {
-        "operationId": "search",
-        "tags": ["Población"],
-        "summary": "Buscar municipios e islas",
-        "description": "Busca municipios e islas por nombre (mínimo 2 caracteres)",
-        "parameters": [
-          {
-            "name": "q",
-            "in": "query",
-            "description": "Término de búsqueda (mínimo 2 caracteres)",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "type",
-            "in": "query",
-            "description": "Tipo (all/municipalities/islands)",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "default": "all"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Resultados de búsqueda",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "integer"
-                          },
-                          "nombre": {
-                            "type": "string"
-                          },
-                          "tipo": {
-                            "type": "string"
-                          },
-                          "isla": {
-                            "type": "string"
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/population/filters": {
-      "get": {
-        "operationId": "getFilters",
-        "tags": ["Población"],
-        "summary": "Obtener opciones de filtro",
-        "description": "Devuelve las opciones disponibles para filtrar",
-        "responses": {
-          "200": {
-            "description": "Opciones de filtro disponibles",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "generos": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          }
-                        },
-                        "edades": {
-                          "type": "array",
-                          "items": {
-                            "type": "integer"
-                          }
-                        },
-                        "anos": {
-                          "type": "array",
-                          "items": {
-                            "type": "integer"
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
+    ]
 }
