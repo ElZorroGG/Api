@@ -151,7 +151,6 @@
  */
 
 /**
-/**
  * @OA\Get(
  *      path="/api/population/islands",
  *      operationId="getIslandPopulation",
@@ -213,7 +212,6 @@
  * )
  */
 
-/**
 /**
  * @OA\Get(
  *      path="/api/population/evolution",
@@ -283,7 +281,6 @@
  */
 
 /**
-/**
  * @OA\Get(
  *      path="/api/population/search",
  *      operationId="searchPopulation",
@@ -321,7 +318,6 @@
  * )
  */
 
-/**
 /**
  * @OA\Get(
  *      path="/api/population/filters",

@@ -44,7 +44,7 @@ return [
                  * Absolute paths to directory containing the swagger annotations are stored.
                  */
                 'annotations' => [
-                    base_path('app'),
+                    base_path('app/OpenAPI'),
                 ],
             ],
         ],
@@ -109,12 +109,6 @@ return [
              */
             'default_processors_configuration' => [
             ],
-
-            /**
-             * analyser: defaults to \OpenApi\StaticAnalyser .
-             *
-             * @see \OpenApi\scan
-             */
             'analyser' => null,
 
             /**
