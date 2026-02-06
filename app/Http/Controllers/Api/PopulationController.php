@@ -261,10 +261,22 @@ class PopulationController extends Controller
                             'municipio' => $group->first()->lugar->nombre ?? 'N/A',
                             'total_poblacion' => $group->sum('poblacion'),
                         ])
-                        ->sortBy('municipio')
                         ->values(),
                 ];
             });
+
+        // Ordenar municipios dentro de cada isla
+        $orderBy = $request->get('order_by', 'municipio');
+        $order = $request->get('order', 'asc');
+        $sortField = ($orderBy === 'total_poblacion') ? 'total_poblacion' : 'municipio';
+
+        $data = $data->map(function($island) use ($sortField, $order) {
+            $island['municipios'] = collect($island['municipios'])
+                ->sortBy($sortField, SORT_REGULAR, $order === 'desc')
+                ->values()
+                ->toArray();
+            return $island;
+        });
 
         return response()->json([
             'success' => true,
@@ -453,7 +465,15 @@ class PopulationController extends Controller
                     'datos' => $evolution,
                 ];
             })
-            ->sortBy('municipio')
+            ->values();
+
+        // Ordenar municipios según parámetros
+        $orderBy = $request->get('order_by', 'municipio');
+        $order = $request->get('order', 'asc');
+        $sortField = ($orderBy === 'total_poblacion') ? 'total_final' : 'municipio';
+
+        $evolutionByMunicipality = $evolutionByMunicipality
+            ->sortBy($sortField, SORT_REGULAR, $order === 'desc')
             ->values();
 
         return response()->json([
