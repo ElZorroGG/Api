@@ -203,6 +203,58 @@
       "response": []
     },
     {
+      "name": "Municipios - Ordenado por población (asc)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8000/api/population/municipalities?order_by=total_poblacion&order=asc",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "population", "municipalities"],
+          "query": [
+            {
+              "key": "order_by",
+              "value": "total_poblacion"
+            },
+            {
+              "key": "order",
+              "value": "asc"
+            }
+          ]
+        },
+        "description": "Municipios ordenados por población (menor a mayor)"
+      },
+      "response": []
+    },
+    {
+      "name": "Municipios - Ordenado alfabéticamente (desc)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8000/api/population/municipalities?order_by=municipio&order=desc",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "population", "municipalities"],
+          "query": [
+            {
+              "key": "order_by",
+              "value": "municipio"
+            },
+            {
+              "key": "order",
+              "value": "desc"
+            }
+          ]
+        },
+        "description": "Municipios ordenados alfabéticamente de Z a A"
+      },
+      "response": []
+    },
+    {
       "name": "Población por Islas",
       "request": {
         "method": "GET",
@@ -214,7 +266,7 @@
           "port": "8000",
           "path": ["api", "population", "islands"]
         },
-        "description": "Obtiene población total por isla"
+        "description": "Obtiene población total por isla (ordenado alfabéticamente por defecto)"
       },
       "response": []
     },
@@ -241,6 +293,58 @@
       "response": []
     },
     {
+      "name": "Islas - Ordenadas por población (desc)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8000/api/population/islands?order_by=total_poblacion&order=desc",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "population", "islands"],
+          "query": [
+            {
+              "key": "order_by",
+              "value": "total_poblacion"
+            },
+            {
+              "key": "order",
+              "value": "desc"
+            }
+          ]
+        },
+        "description": "Islas ordenadas por población (mayor a menor)"
+      },
+      "response": []
+    },
+    {
+      "name": "Islas - Ordenadas por población (asc)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8000/api/population/islands?order_by=total_poblacion&order=asc",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "population", "islands"],
+          "query": [
+            {
+              "key": "order_by",
+              "value": "total_poblacion"
+            },
+            {
+              "key": "order",
+              "value": "asc"
+            }
+          ]
+        },
+        "description": "Islas ordenadas por población (menor a mayor)"
+      },
+      "response": []
+    },
+    {
       "name": "Islas - Desglose por municipios",
       "request": {
         "method": "GET",
@@ -259,6 +363,36 @@
           ]
         },
         "description": "Población de islas con desglose por municipios"
+      },
+      "response": []
+    },
+    {
+      "name": "Islas - Desglose ordenado por población",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8000/api/population/islands?breakdown=true&order_by=total_poblacion&order=desc",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "population", "islands"],
+          "query": [
+            {
+              "key": "breakdown",
+              "value": "true"
+            },
+            {
+              "key": "order_by",
+              "value": "total_poblacion"
+            },
+            {
+              "key": "order",
+              "value": "desc"
+            }
+          ]
+        },
+        "description": "Islas desglosadas con municipios ordenados por población (desc)"
       },
       "response": []
     },
