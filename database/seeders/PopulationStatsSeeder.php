@@ -40,7 +40,6 @@ class PopulationStatsSeeder extends Seeder
             }
             fclose($handle);
         }
-        echo "Municipios leídos del CSV: " . count($municipios) . "\n";
 
         $islaNombres = [];
         if (($handle = fopen($datasetPath, 'r')) !== false) {
@@ -61,7 +60,6 @@ class PopulationStatsSeeder extends Seeder
             $isla = Isla::create(['nombre' => $nombre, 'codigo' => $codigo]);
             $islaMap[$codigo] = $isla->id;
         }
-        echo "Islas creadas: " . count($islaMap) . "\n";
 
         $lugarMap = [];
         $lugarIsla = [];
@@ -75,7 +73,6 @@ class PopulationStatsSeeder extends Seeder
             $lugarMap[$geocode] = $lugar->id;
             $lugarIsla[$geocode] = $isla_id;
         }
-        echo "Municipios (lugares) creados: " . count($lugarMap) . "\n";
 
         $recordCount = 0;
         $batch = [];
@@ -135,13 +132,5 @@ class PopulationStatsSeeder extends Seeder
             fclose($handle);
         }
 
-        echo "\n✅ Seeder completado - Datos 100% desde CSVs:\n";
-        echo "- Municipios: " . count($lugarMap) . "\n";
-        echo "- Islas: " . count($islaMap) . "\n";
-        echo "- Géneros: solo Hombres y Mujeres (sin Total)\n";
-        echo "- Edades: 0 a 100 individuales (sin rangos)\n";
-        echo "- Años: 2021-2025\n";
-        echo "- Registros de población insertados: {$recordCount}\n";
-        echo "- Esperados: 88 × 2 × 101 × 5 = 88,880\n";
     }
 }
