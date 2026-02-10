@@ -80,6 +80,11 @@ class PopulationController extends Controller
             $response['filtros_aplicados']['ano'] = $request->get('ano');
         }
 
+        // Mostrar filtro de edad específica si se aplicó
+        if ($request->has('edad_especifica')) {
+            $response['filtros_aplicados']['edad_especifica'] = (int) $request->get('edad_especifica');
+        }
+
         // Mostrar rangos de edad aplicados si se filtró por rango
         if ($request->has('edad_min') && $request->has('edad_max')) {
             $edadMin = (int) $request->get('edad_min');
@@ -482,9 +487,21 @@ class PopulationController extends Controller
             $query->where('genero', $request->get('genero'));
         }
 
-        // Filtro por edad
+        // Filtro por edad (texto exacto)
         if ($request->has('edad')) {
             $query->where('edad', $request->get('edad'));
+        }
+
+        // Filtro por edad específica (número)
+        if ($request->has('edad_especifica')) {
+            $edadNum = (int)$request->get('edad_especifica');
+            if ($edadNum === 1) {
+                $query->where('edad', '1 año');
+            } elseif ($edadNum >= 100) {
+                $query->where('edad', '100 años o más');
+            } else {
+                $query->where('edad', $edadNum . ' años');
+            }
         }
 
         // Filtro por rango de edad
@@ -572,6 +589,13 @@ class PopulationController extends Controller
      *          description="Filtrar por edad o rango de edad específico",
      *          required=false,
      *          @OA\Schema(type="string", example="De 0 a 14 años")
+     *      ),
+     *      @OA\Parameter(
+     *          name="edad_especifica",
+     *          in="query",
+     *          description="Filtrar por edad numérica exacta (0-100)",
+     *          required=false,
+     *          @OA\Schema(type="integer", example=25)
      *      ),
      *      @OA\Parameter(
      *          name="edad_min",
@@ -667,6 +691,13 @@ class PopulationController extends Controller
      *          @OA\Schema(type="string")
      *      ),
      *      @OA\Parameter(
+     *          name="edad_especifica",
+     *          in="query",
+     *          description="Filtrar por edad numérica exacta (0-100)",
+     *          required=false,
+     *          @OA\Schema(type="integer", example=25)
+     *      ),
+     *      @OA\Parameter(
      *          name="ano",
      *          in="query",
      *          description="Filtrar por año",
@@ -742,6 +773,13 @@ class PopulationController extends Controller
      *          description="Filtrar por edad",
      *          required=false,
      *          @OA\Schema(type="string")
+     *      ),
+     *      @OA\Parameter(
+     *          name="edad_especifica",
+     *          in="query",
+     *          description="Filtrar por edad numérica exacta (0-100)",
+     *          required=false,
+     *          @OA\Schema(type="integer", example=25)
      *      ),
      *      @OA\Parameter(
      *          name="ano",

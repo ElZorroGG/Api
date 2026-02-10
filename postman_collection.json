@@ -126,6 +126,24 @@
           "response": []
         },
         {
+          "name": "Filtro por edad especifica (numero)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/municipalities?edad_especifica=25",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "municipalities"],
+              "query": [
+                { "key": "edad_especifica", "value": "25" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "Filtro por rango de edad",
           "request": {
             "method": "GET",
@@ -264,7 +282,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "http://localhost:8000/api/population/municipalities?municipio=Las Palmas&genero=Hombres&edad_min=20&edad_max=40&ano=2024&order_by=total_poblacion&order=desc",
+              "raw": "http://localhost:8000/api/population/municipalities?municipio=Las Palmas&genero=Hombres&edad_especifica=25&edad_min=20&edad_max=40&ano=2024&order_by=total_poblacion&order=desc",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8000",
@@ -272,6 +290,7 @@
               "query": [
                 { "key": "municipio", "value": "Las Palmas" },
                 { "key": "genero", "value": "Hombres" },
+                { "key": "edad_especifica", "value": "25" },
                 { "key": "edad_min", "value": "20" },
                 { "key": "edad_max", "value": "40" },
                 { "key": "ano", "value": "2024" },
@@ -406,7 +425,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "http://localhost:8000/api/population/islands?isla=Tenerife&genero=Hombres&edad_min=18&edad_max=65&ano=2024&order_by=total_poblacion&order=desc",
+              "raw": "http://localhost:8000/api/population/islands?isla=Tenerife&genero=Hombres&edad_especifica=30&edad_min=18&edad_max=65&ano=2024&order_by=total_poblacion&order=desc",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8000",
@@ -414,6 +433,7 @@
               "query": [
                 { "key": "isla", "value": "Tenerife" },
                 { "key": "genero", "value": "Hombres" },
+                { "key": "edad_especifica", "value": "30" },
                 { "key": "edad_min", "value": "18" },
                 { "key": "edad_max", "value": "65" },
                 { "key": "ano", "value": "2024" },
