@@ -33,7 +33,6 @@ class PopulationController extends Controller
             ->map(function ($group) use ($maxAno) {
                 $lugar = $group->first()->lugar;
                 $poblacionUltimoAno = (int) $group->where('ano', $maxAno)->sum('poblacion');
-                $sumaPoblacion = (int) $group->sum('poblacion');
 
                 return [
                     'lugar_id' => $group->first()->lugar_id,
@@ -41,7 +40,6 @@ class PopulationController extends Controller
                     'isla_id' => $lugar->isla_id,
                     'total_poblacion' => $poblacionUltimoAno,
                     'ultimo_ano' => $maxAno,
-                    'suma_poblacion' => $sumaPoblacion,
                 ];
             });
 
@@ -57,10 +55,6 @@ class PopulationController extends Controller
             $data = ($order === 'desc')
                 ? $data->sortByDesc(fn($item) => $item['total_poblacion'])
                 : $data->sortBy(fn($item) => $item['total_poblacion']);
-        } elseif ($orderBy === 'suma_poblacion') {
-            $data = ($order === 'desc')
-                ? $data->sortByDesc(fn($item) => $item['suma_poblacion'])
-                : $data->sortBy(fn($item) => $item['suma_poblacion']);
         }
 
         $response = [
@@ -68,7 +62,6 @@ class PopulationController extends Controller
             'data' => $data->values(),
             'ultimo_ano' => $maxAno,
             'total' => (int) $data->sum('total_poblacion'),
-            'suma_total' => (int) $data->sum('suma_poblacion'),
             'filtros_aplicados' => [],
         ];
 
@@ -158,14 +151,12 @@ class PopulationController extends Controller
             ->map(function ($group) use ($maxAno) {
                 $isla = $group->first()->isla;
                 $poblacionUltimoAno = (int) $group->where('ano', $maxAno)->sum('poblacion');
-                $sumaPoblacion = (int) $group->sum('poblacion');
 
                 return [
                     'isla_id' => $group->first()->isla_id,
                     'isla' => $isla->nombre ?? 'N/A',
                     'total_poblacion' => $poblacionUltimoAno,
                     'ultimo_ano' => $maxAno,
-                    'suma_poblacion' => $sumaPoblacion,
                 ];
             });
 
@@ -181,10 +172,6 @@ class PopulationController extends Controller
             $data = ($order === 'desc')
                 ? $data->sortByDesc(fn($item) => $item['total_poblacion'])
                 : $data->sortBy(fn($item) => $item['total_poblacion']);
-        } elseif ($orderBy === 'suma_poblacion') {
-            $data = ($order === 'desc')
-                ? $data->sortByDesc(fn($item) => $item['suma_poblacion'])
-                : $data->sortBy(fn($item) => $item['suma_poblacion']);
         }
 
         return response()->json([
@@ -192,7 +179,6 @@ class PopulationController extends Controller
             'data' => $data->values(),
             'ultimo_ano' => $maxAno,
             'total' => (int) $data->sum('total_poblacion'),
-            'suma_total' => (int) $data->sum('suma_poblacion'),
         ]);
     }
 
@@ -231,12 +217,10 @@ class PopulationController extends Controller
                     'municipios' => $municipios->groupBy('lugar_id')
                         ->map(function ($group) use ($maxAno) {
                             $poblacionUltimoAno = (int) $group->where('ano', $maxAno)->sum('poblacion');
-                            $sumaPoblacion = (int) $group->sum('poblacion');
                             return [
                                 'municipio' => $group->first()->lugar->nombre ?? 'N/A',
                                 'total_poblacion' => $poblacionUltimoAno,
                                 'ultimo_ano' => $maxAno,
-                                'suma_poblacion' => $sumaPoblacion,
                             ];
                         })
                         ->values(),
@@ -263,7 +247,6 @@ class PopulationController extends Controller
             'data' => $data->sortBy('isla')->values(),
             'ultimo_ano' => $maxAno,
             'total' => $latestYearTotal,
-            'suma_total' => (int) $allData->sum('poblacion'),
         ]);
     }
 
@@ -647,8 +630,7 @@ class PopulationController extends Controller
      *              @OA\Property(property="success", type="boolean", example=true),
      *              @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/MunicipioResponse")),
      *              @OA\Property(property="ultimo_ano", type="integer", example=2025, description="Último año con datos disponibles"),
-     *              @OA\Property(property="total", type="integer", example=2267239, description="Población total del último año"),
-     *              @OA\Property(property="suma_total", type="integer", example=11336195, description="Suma de población acumulada de todos los años")
+     *              @OA\Property(property="total", type="integer", example=2267239, description="Población total del último año")
      *          )
      *      ),
      *      @OA\Response(response=400, description="Parámetros inválidos"),
@@ -713,8 +695,7 @@ class PopulationController extends Controller
      *              @OA\Property(property="success", type="boolean", example=true),
      *              @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/IslaResponse")),
      *              @OA\Property(property="ultimo_ano", type="integer", example=2025, description="Último año con datos disponibles"),
-     *              @OA\Property(property="total", type="integer", example=2267239, description="Población total del último año"),
-     *              @OA\Property(property="suma_total", type="integer", example=11336195, description="Suma de población acumulada de todos los años")
+     *              @OA\Property(property="total", type="integer", example=2267239, description="Población total del último año")
      *          )
      *      )
      * )
