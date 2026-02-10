@@ -1,6 +1,6 @@
 {
   "info": {
-    "name": "API Demográfica Canarias",
+    "name": "API Demografica Canarias",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -15,646 +15,722 @@
   },
   "item": [
     {
-      "name": "Filtros Disponibles",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/api/population/filters",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "population", "filters"]
-        },
-        "description": "Obtiene los filtros disponibles (géneros, edades, años)"
-      },
-      "response": []
-    },
-    {
-      "name": "Población por Municipios",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/api/population/municipalities",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "population", "municipalities"]
-        },
-        "description": "Obtiene población por municipio (ordenado alfabéticamente)"
-      },
-      "response": []
-    },
-    {
-      "name": "Municipios - Con filtro de género",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/api/population/municipalities?genero=Hombres",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "population", "municipalities"],
-          "query": [
-            {
-              "key": "genero",
-              "value": "Hombres"
+      "name": "Filtros",
+      "item": [
+        {
+          "name": "Filtros Disponibles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/filters",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "filters"]
             }
-          ]
-        },
-        "description": "Municipios filtrados por género (Hombres/Mujeres)"
-      },
-      "response": []
+          },
+          "response": []
+        }
+      ]
     },
     {
-      "name": "Municipios - Con filtro de año",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/api/population/municipalities?ano=2024",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "population", "municipalities"],
-          "query": [
-            {
-              "key": "ano",
-              "value": "2024"
+      "name": "Municipios",
+      "item": [
+        {
+          "name": "Todos los municipios",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/municipalities",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "municipalities"]
             }
-          ]
+          },
+          "response": []
         },
-        "description": "Municipios para un año específico"
-      },
-      "response": []
-    },
-    {
-      "name": "Municipios - Múltiples años",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/api/population/municipalities?ano=2023&ano=2024",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "population", "municipalities"],
-          "query": [
-            {
-              "key": "ano",
-              "value": "2023"
-            },
-            {
-              "key": "ano",
-              "value": "2024"
+        {
+          "name": "Filtro por genero",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/municipalities?genero=Hombres",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "municipalities"],
+              "query": [
+                { "key": "genero", "value": "Hombres" }
+              ]
             }
-          ]
+          },
+          "response": []
         },
-        "description": "Municipios para múltiples años"
-      },
-      "response": []
-    },
-    {
-      "name": "Municipios - Rango de años",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/api/population/municipalities?ano_desde=2022&ano_hasta=2025",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "population", "municipalities"],
-          "query": [
-            {
-              "key": "ano_desde",
-              "value": "2022"
-            },
-            {
-              "key": "ano_hasta",
-              "value": "2025"
+        {
+          "name": "Filtro por ano",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/municipalities?ano=2024",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "municipalities"],
+              "query": [
+                { "key": "ano", "value": "2024" }
+              ]
             }
-          ]
+          },
+          "response": []
         },
-        "description": "Municipios para un rango de años"
-      },
-      "response": []
-    },
-    {
-      "name": "Municipios - Ordenado por población (desc)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/api/population/municipalities?order_by=total_poblacion&order=desc",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "population", "municipalities"],
-          "query": [
-            {
-              "key": "order_by",
-              "value": "total_poblacion"
-            },
-            {
-              "key": "order",
-              "value": "desc"
+        {
+          "name": "Filtro por rango de anos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/municipalities?ano_desde=2022&ano_hasta=2025",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "municipalities"],
+              "query": [
+                { "key": "ano_desde", "value": "2022" },
+                { "key": "ano_hasta", "value": "2025" }
+              ]
             }
-          ]
+          },
+          "response": []
         },
-        "description": "Municipios ordenados por población (mayor a menor)"
-      },
-      "response": []
-    },
-    {
-      "name": "Municipios - Filtros combinados",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/api/population/municipalities?genero=Hombres&ano=2024&order_by=total_poblacion&order=desc",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "population", "municipalities"],
-          "query": [
-            {
-              "key": "genero",
-              "value": "Hombres"
-            },
-            {
-              "key": "ano",
-              "value": "2024"
-            },
-            {
-              "key": "order_by",
-              "value": "total_poblacion"
-            },
-            {
-              "key": "order",
-              "value": "desc"
+        {
+          "name": "Filtro por edad",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/municipalities?edad=25 años",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "municipalities"],
+              "query": [
+                { "key": "edad", "value": "25 años" }
+              ]
             }
-          ]
+          },
+          "response": []
         },
-        "description": "Hombres en 2024 ordenados por población (descendente)"
-      },
-      "response": []
-    },
-    {
-      "name": "Municipios - Ordenado por población (asc)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/api/population/municipalities?order_by=total_poblacion&order=asc",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "population", "municipalities"],
-          "query": [
-            {
-              "key": "order_by",
-              "value": "total_poblacion"
-            },
-            {
-              "key": "order",
-              "value": "asc"
+        {
+          "name": "Filtro por rango de edad",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/municipalities?edad_min=18&edad_max=35",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "municipalities"],
+              "query": [
+                { "key": "edad_min", "value": "18" },
+                { "key": "edad_max", "value": "35" }
+              ]
             }
-          ]
+          },
+          "response": []
         },
-        "description": "Municipios ordenados por población (menor a mayor)"
-      },
-      "response": []
-    },
-    {
-      "name": "Municipios - Ordenado alfabéticamente (desc)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/api/population/municipalities?order_by=municipio&order=desc",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "population", "municipalities"],
-          "query": [
-            {
-              "key": "order_by",
-              "value": "municipio"
-            },
-            {
-              "key": "order",
-              "value": "desc"
+        {
+          "name": "Ordenar por poblacion (desc)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/municipalities?order_by=total_poblacion&order=desc",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "municipalities"],
+              "query": [
+                { "key": "order_by", "value": "total_poblacion" },
+                { "key": "order", "value": "desc" }
+              ]
             }
-          ]
+          },
+          "response": []
         },
-        "description": "Municipios ordenados alfabéticamente de Z a A"
-      },
-      "response": []
-    },
-    {
-      "name": "Población por Islas",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/api/population/islands",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "population", "islands"]
-        },
-        "description": "Obtiene población total por isla (ordenado alfabéticamente por defecto)"
-      },
-      "response": []
-    },
-    {
-      "name": "Islas - Con filtro de género",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/api/population/islands?genero=Mujeres",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "population", "islands"],
-          "query": [
-            {
-              "key": "genero",
-              "value": "Mujeres"
+        {
+          "name": "Ordenar por poblacion (asc)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/municipalities?order_by=total_poblacion&order=asc",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "municipalities"],
+              "query": [
+                { "key": "order_by", "value": "total_poblacion" },
+                { "key": "order", "value": "asc" }
+              ]
             }
-          ]
+          },
+          "response": []
         },
-        "description": "Población de islas por mujeres"
-      },
-      "response": []
-    },
-    {
-      "name": "Islas - Ordenadas por población (desc)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/api/population/islands?order_by=total_poblacion&order=desc",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "population", "islands"],
-          "query": [
-            {
-              "key": "order_by",
-              "value": "total_poblacion"
-            },
-            {
-              "key": "order",
-              "value": "desc"
+        {
+          "name": "Ordenar alfabeticamente (Z-A)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/municipalities?order_by=municipio&order=desc",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "municipalities"],
+              "query": [
+                { "key": "order_by", "value": "municipio" },
+                { "key": "order", "value": "desc" }
+              ]
             }
-          ]
+          },
+          "response": []
         },
-        "description": "Islas ordenadas por población (mayor a menor)"
-      },
-      "response": []
-    },
-    {
-      "name": "Islas - Ordenadas por población (asc)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/api/population/islands?order_by=total_poblacion&order=asc",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "population", "islands"],
-          "query": [
-            {
-              "key": "order_by",
-              "value": "total_poblacion"
-            },
-            {
-              "key": "order",
-              "value": "asc"
+        {
+          "name": "Buscar municipio por nombre",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/municipalities?municipio=Adeje",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "municipalities"],
+              "query": [
+                { "key": "municipio", "value": "Adeje" }
+              ]
             }
-          ]
+          },
+          "response": []
         },
-        "description": "Islas ordenadas por población (menor a mayor)"
-      },
-      "response": []
-    },
-    {
-      "name": "Islas - Desglose por municipios",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/api/population/islands?breakdown=true",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "population", "islands"],
-          "query": [
-            {
-              "key": "breakdown",
-              "value": "true"
+        {
+          "name": "Municipio + nombre + genero + edad",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/municipalities?municipio=Arona&genero=Mujeres&edad_min=18&edad_max=65",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "municipalities"],
+              "query": [
+                { "key": "municipio", "value": "Arona" },
+                { "key": "genero", "value": "Mujeres" },
+                { "key": "edad_min", "value": "18" },
+                { "key": "edad_max", "value": "65" }
+              ]
             }
-          ]
+          },
+          "response": []
         },
-        "description": "Población de islas con desglose por municipios"
-      },
-      "response": []
-    },
-    {
-      "name": "Islas - Desglose ordenado por población",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/api/population/islands?breakdown=true&order_by=total_poblacion&order=desc",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "population", "islands"],
-          "query": [
-            {
-              "key": "breakdown",
-              "value": "true"
-            },
-            {
-              "key": "order_by",
-              "value": "total_poblacion"
-            },
-            {
-              "key": "order",
-              "value": "desc"
+        {
+          "name": "Buscar municipio - Santa Cruz",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/municipalities?municipio=Santa Cruz",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "municipalities"],
+              "query": [
+                { "key": "municipio", "value": "Santa Cruz" }
+              ]
             }
-          ]
+          },
+          "response": []
         },
-        "description": "Islas desglosadas con municipios ordenados por población (desc)"
-      },
-      "response": []
-    },
-    {
-      "name": "Islas - Desglose + filtro género",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/api/population/islands?breakdown=true&genero=Hombres&ano=2024",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "population", "islands"],
-          "query": [
-            {
-              "key": "breakdown",
-              "value": "true"
-            },
-            {
-              "key": "genero",
-              "value": "Hombres"
-            },
-            {
-              "key": "ano",
-              "value": "2024"
+        {
+          "name": "TODOS los filtros combinados",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/municipalities?municipio=Las Palmas&genero=Hombres&edad_min=20&edad_max=40&ano=2024&order_by=total_poblacion&order=desc",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "municipalities"],
+              "query": [
+                { "key": "municipio", "value": "Las Palmas" },
+                { "key": "genero", "value": "Hombres" },
+                { "key": "edad_min", "value": "20" },
+                { "key": "edad_max", "value": "40" },
+                { "key": "ano", "value": "2024" },
+                { "key": "order_by", "value": "total_poblacion" },
+                { "key": "order", "value": "desc" }
+              ]
             }
-          ]
+          },
+          "response": []
         },
-        "description": "Islas desglosadas por municipios - Hombres en 2024"
-      },
-      "response": []
-    },
-    {
-      "name": "Evolución - Municipio",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/api/population/evolution?type=municipality&id=72",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "population", "evolution"],
-          "query": [
-            {
-              "key": "type",
-              "value": "municipality"
-            },
-            {
-              "key": "id",
-              "value": "72"
+        {
+          "name": "Filtros combinados (genero + rango anos)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/municipalities?genero=Mujeres&ano_desde=2022&ano_hasta=2025&order_by=total_poblacion&order=desc",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "municipalities"],
+              "query": [
+                { "key": "genero", "value": "Mujeres" },
+                { "key": "ano_desde", "value": "2022" },
+                { "key": "ano_hasta", "value": "2025" },
+                { "key": "order_by", "value": "total_poblacion" },
+                { "key": "order", "value": "desc" }
+              ]
             }
-          ]
-        },
-        "description": "Evolución de población de un municipio (id=72 es Santa Cruz de Tenerife)"
-      },
-      "response": []
+          },
+          "response": []
+        }
+      ]
     },
     {
-      "name": "Evolución - Municipio + género",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/api/population/evolution?type=municipality&id=72&genero=Mujeres",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "population", "evolution"],
-          "query": [
-            {
-              "key": "type",
-              "value": "municipality"
-            },
-            {
-              "key": "id",
-              "value": "72"
-            },
-            {
-              "key": "genero",
-              "value": "Mujeres"
+      "name": "Islas",
+      "item": [
+        {
+          "name": "Todas las islas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/islands",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "islands"]
             }
-          ]
+          },
+          "response": []
         },
-        "description": "Evolución de mujeres en un municipio"
-      },
-      "response": []
+        {
+          "name": "Filtro por genero",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/islands?genero=Mujeres",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "islands"],
+              "query": [
+                { "key": "genero", "value": "Mujeres" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ordenar por poblacion (desc)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/islands?order_by=total_poblacion&order=desc",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "islands"],
+              "query": [
+                { "key": "order_by", "value": "total_poblacion" },
+                { "key": "order", "value": "desc" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar isla por nombre",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/islands?isla=Tenerife",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "islands"],
+              "query": [
+                { "key": "isla", "value": "Tenerife" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Isla + nombre + genero + edad",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/islands?isla=Gran Canaria&genero=Hombres&edad_min=25&edad_max=50",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "islands"],
+              "query": [
+                { "key": "isla", "value": "Gran Canaria" },
+                { "key": "genero", "value": "Hombres" },
+                { "key": "edad_min", "value": "25" },
+                { "key": "edad_max", "value": "50" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TODOS los filtros combinados",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/islands?isla=Tenerife&genero=Hombres&edad_min=18&edad_max=65&ano=2024&order_by=total_poblacion&order=desc",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "islands"],
+              "query": [
+                { "key": "isla", "value": "Tenerife" },
+                { "key": "genero", "value": "Hombres" },
+                { "key": "edad_min", "value": "18" },
+                { "key": "edad_max", "value": "65" },
+                { "key": "ano", "value": "2024" },
+                { "key": "order_by", "value": "total_poblacion" },
+                { "key": "order", "value": "desc" }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     },
     {
-      "name": "Evolución - Isla",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/api/population/evolution?type=island&id=5",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "population", "evolution"],
-          "query": [
-            {
-              "key": "type",
-              "value": "island"
+      "name": "Evolucion",
+      "item": [
+        {
+          "name": "Evolucion municipio por nombre",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/evolution?type=municipality&nombre=Adeje",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "evolution"],
+              "query": [
+                { "key": "type", "value": "municipality" },
+                { "key": "nombre", "value": "Adeje" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Evolucion isla por nombre",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/evolution?type=island&nombre=Tenerife",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "evolution"],
+              "query": [
+                { "key": "type", "value": "island" },
+                { "key": "nombre", "value": "Tenerife" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Evolucion municipio con genero",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/evolution?type=municipality&nombre=Arucas&genero=Mujeres",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "evolution"],
+              "query": [
+                { "key": "type", "value": "municipality" },
+                { "key": "nombre", "value": "Arucas" },
+                { "key": "genero", "value": "Mujeres" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Evolucion isla con genero",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/evolution?type=island&nombre=Gran Canaria&genero=Hombres",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "evolution"],
+              "query": [
+                { "key": "type", "value": "island" },
+                { "key": "nombre", "value": "Gran Canaria" },
+                { "key": "genero", "value": "Hombres" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Evolucion con TODOS los filtros",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/evolution?type=municipality&nombre=Santa Cruz de Tenerife&genero=Mujeres&edad_min=0&edad_max=17",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "evolution"],
+              "query": [
+                { "key": "type", "value": "municipality" },
+                { "key": "nombre", "value": "Santa Cruz de Tenerife" },
+                { "key": "genero", "value": "Mujeres" },
+                { "key": "edad_min", "value": "0" },
+                { "key": "edad_max", "value": "17" }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Busqueda",
+      "item": [
+        {
+          "name": "Buscar por nombre (general)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/search?q=Santa Cruz",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "search"],
+              "query": [
+                { "key": "q", "value": "Santa Cruz" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar municipio por nombre",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/search?q=Adeje&type=municipalities",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "search"],
+              "query": [
+                { "key": "q", "value": "Adeje" },
+                { "key": "type", "value": "municipalities" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar municipio - Las Palmas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/search?q=Las Palmas&type=municipalities",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "search"],
+              "query": [
+                { "key": "q", "value": "Las Palmas" },
+                { "key": "type", "value": "municipalities" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar municipio - Arona",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/search?q=Arona&type=municipalities",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "search"],
+              "query": [
+                { "key": "q", "value": "Arona" },
+                { "key": "type", "value": "municipalities" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar isla por nombre",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/search?q=Tenerife&type=islands",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "search"],
+              "query": [
+                { "key": "q", "value": "Tenerife" },
+                { "key": "type", "value": "islands" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar municipio - La Laguna",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/population/search?q=Laguna&type=municipalities",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "population", "search"],
+              "query": [
+                { "key": "q", "value": "Laguna" },
+                { "key": "type", "value": "municipalities" }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Autenticacion",
+      "item": [
+        {
+          "name": "Registro",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\"\n}"
             },
-            {
-              "key": "id",
-              "value": "5"
+            "url": {
+              "raw": "http://localhost:8000/api/register",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "register"]
             }
-          ]
+          },
+          "response": []
         },
-        "description": "Evolución de población de una isla (id=5 es Tenerife)"
-      },
-      "response": []
-    },
-    {
-      "name": "Evolución - Isla + género",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/api/population/evolution?type=island&id=5&genero=Hombres",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "population", "evolution"],
-          "query": [
-            {
-              "key": "type",
-              "value": "island"
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
             },
-            {
-              "key": "id",
-              "value": "5"
-            },
-            {
-              "key": "genero",
-              "value": "Hombres"
+            "url": {
+              "raw": "http://localhost:8000/api/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "login"]
             }
-          ]
+          },
+          "response": []
         },
-        "description": "Evolución de hombres en una isla"
-      },
-      "response": []
-    },
-    {
-      "name": "Búsqueda - Básica",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/api/population/search?q=Santa",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "population", "search"],
-          "query": [
-            {
-              "key": "q",
-              "value": "Santa"
+        {
+          "name": "Obtener usuario",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "http://localhost:8000/api/user",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "user"]
             }
-          ]
+          },
+          "response": []
         },
-        "description": "Busca municipios e islas que contengan 'Santa'"
-      },
-      "response": []
-    },
-    {
-      "name": "Búsqueda - Solo municipios",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/api/population/search?q=Las&type=municipalities",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "population", "search"],
-          "query": [
-            {
-              "key": "q",
-              "value": "Las"
-            },
-            {
-              "key": "type",
-              "value": "municipalities"
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "http://localhost:8000/api/logout",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "logout"]
             }
-          ]
-        },
-        "description": "Busca solo municipios que contengan 'Las'"
-      },
-      "response": []
-    },
-    {
-      "name": "Búsqueda - Solo islas",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/api/population/search?q=Canaria&type=islands",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "population", "search"],
-          "query": [
-            {
-              "key": "q",
-              "value": "Canaria"
-            },
-            {
-              "key": "type",
-              "value": "islands"
-            }
-          ]
-        },
-        "description": "Busca solo islas"
-      },
-      "response": []
-    },
-    {
-      "name": "Búsqueda - Tenerife",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/api/population/search?q=Tenerife",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "population", "search"],
-          "query": [
-            {
-              "key": "q",
-              "value": "Tenerife"
-            }
-          ]
-        },
-        "description": "Busca Tenerife (isla y municipios)"
-      },
-      "response": []
-    },
-    {
-      "name": "Obtener usuario (Auth)",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{token}}",
-            "type": "text"
-          }
-        ],
-        "url": {
-          "raw": "http://localhost:8000/api/user",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "user"]
-        },
-        "description": "Obtiene datos del usuario autenticado (requiere token)"
-      },
-      "response": []
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [

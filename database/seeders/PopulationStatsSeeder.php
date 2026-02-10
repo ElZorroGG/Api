@@ -11,111 +11,137 @@ class PopulationStatsSeeder extends Seeder
 {
     public function run()
     {
-        $dataset = base_path('dataset-ISTAC_E30243A_000001_1.5_20260130170515.csv');
-        $muniFile = base_path('municipios_desde2007_20170101.csv');
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        DB::table('population_stats')->truncate();
+        Lugar::truncate();
+        Isla::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
-        $islandNames = [];
-        if (($h = fopen($dataset, 'r')) !== false) {
-            $header = fgetcsv($h);
-            $idx = array_flip($header ?: []);
-            while (($row = fgetcsv($h)) !== false) {
-                if (!isset($row[$idx['TERRITORIO_CODE']])) continue;
-                $code = $row[$idx['TERRITORIO_CODE']];
-                $measure = $row[$idx['MEDIDAS_CODE']] ?? null;
-                $territorio = $row[$idx['TERRITORIO#es']] ?? null;
-                if (is_string($code) && str_starts_with($code, 'ES') && ($measure === 'POBLACION')) {
-                    if (!isset($islandNames[$code])) {
-                        $islandNames[$code] = $territorio;
+        $muniPath = base_path('municipios_desde2007_20170101.csv');
+        $datasetPath = base_path('dataset-ISTAC_E30243A_000001_1.5_20260130170515.csv');
+
+        $municipios = [];
+        if (($handle = fopen($muniPath, 'r')) !== false) {
+            fgetcsv($handle);
+            while (($row = fgetcsv($handle)) !== false) {
+                if (count($row) < 7) continue;
+                $geocode = trim($row[0], '" ');
+                if (str_contains($geocode, '_')) {
+                    $geocode = explode('_', $geocode)[0];
+                }
+                $etiqueta = trim($row[2]);
+                $gcd_isla = trim($row[6]);
+                if (!empty($geocode) && !empty($etiqueta)) {
+                    $municipios[$geocode] = [
+                        'nombre' => $etiqueta,
+                        'isla_code' => $gcd_isla,
+                    ];
+                }
+            }
+            fclose($handle);
+        }
+        echo "Municipios leídos del CSV: " . count($municipios) . "\n";
+
+        $islaNombres = [];
+        if (($handle = fopen($datasetPath, 'r')) !== false) {
+            $header = fgetcsv($handle);
+            $h = array_flip($header);
+            while (($row = fgetcsv($handle)) !== false) {
+                $tcode = trim($row[$h['TERRITORIO_CODE']] ?? '');
+                $tnombre = trim($row[$h['TERRITORIO#es']] ?? '');
+                if (preg_match('/^ES7\d{2}$/', $tcode) && !empty($tnombre)) {
+                    $islaNombres[$tcode] = $tnombre;
+                }
+            }
+            fclose($handle);
+        }
+
+        $islaMap = [];
+        foreach ($islaNombres as $codigo => $nombre) {
+            $isla = Isla::create(['nombre' => $nombre, 'codigo' => $codigo]);
+            $islaMap[$codigo] = $isla->id;
+        }
+        echo "Islas creadas: " . count($islaMap) . "\n";
+
+        $lugarMap = [];
+        $lugarIsla = [];
+        foreach ($municipios as $geocode => $data) {
+            $isla_id = $islaMap[$data['isla_code']] ?? null;
+            $lugar = Lugar::create([
+                'nombre' => $data['nombre'],
+                'codigo_lugar' => $geocode,
+                'isla_id' => $isla_id,
+            ]);
+            $lugarMap[$geocode] = $lugar->id;
+            $lugarIsla[$geocode] = $isla_id;
+        }
+        echo "Municipios (lugares) creados: " . count($lugarMap) . "\n";
+
+        $recordCount = 0;
+        $batch = [];
+        $batchSize = 500;
+        $now = now();
+
+        if (($handle = fopen($datasetPath, 'r')) !== false) {
+            $header = fgetcsv($handle);
+            $h = array_flip($header);
+
+            while (($row = fgetcsv($handle)) !== false) {
+                $tcode = trim($row[$h['TERRITORIO_CODE']] ?? '');
+                $medida = trim($row[$h['MEDIDAS_CODE']] ?? '');
+                $genero = trim($row[$h['SEXO#es']] ?? '');
+                $edad = trim($row[$h['EDAD#es']] ?? '');
+                $ano = (int) trim($row[$h['TIME_PERIOD_CODE']] ?? '0');
+                $poblacion = (int) ($row[$h['OBS_VALUE']] ?? 0);
+
+                if ($medida !== 'POBLACION') continue;
+                if (!isset($lugarMap[$tcode])) continue;
+                if ($genero !== 'Hombres' && $genero !== 'Mujeres') continue;
+
+                $esEdadIndividual = false;
+                if ($edad === '1 año') {
+                    $esEdadIndividual = true;
+                } elseif ($edad === '100 años o más') {
+                    $esEdadIndividual = true;
+                } elseif (preg_match('/^(\d+) años$/', $edad, $m)) {
+                    $num = (int) $m[1];
+                    if ($num >= 0 && $num <= 99) {
+                        $esEdadIndividual = true;
                     }
                 }
-            }
-            fclose($h);
-        }
+                if (!$esEdadIndividual) continue;
 
-        $muniMap = [];
-        if (($h = fopen($muniFile, 'r')) !== false) {
-            $header = fgetcsv($h);
-            $idx = array_flip($header ?: []);
-            while (($row = fgetcsv($h)) !== false) {
-                $geocode = trim(trim($row[$idx['geocode']] ?? ''), '"');
-                $gcd_isla = $row[$idx['gcd_isla']] ?? null;
-                $etiqueta = $row[$idx['etiqueta']] ?? null;
-                if ($geocode !== '') {
-                    $muniMap[$geocode] = ['island_code' => $gcd_isla, 'etiqueta' => $etiqueta];
-                }
-            }
-            fclose($h);
-        }
-
-        foreach ($islandNames as $codigo => $nombre) {
-            Isla::updateOrCreate(['codigo' => $codigo], ['nombre' => $nombre]);
-        }
-
-        if (($h = fopen($muniFile, 'r')) !== false) {
-            $header = fgetcsv($h);
-            $idx = array_flip($header ?: []);
-            while (($row = fgetcsv($h)) !== false) {
-                $geocode = trim(trim($row[$idx['geocode']] ?? ''), '"');
-                $gcd_isla = $row[$idx['gcd_isla']] ?? null;
-                $etiqueta = $row[$idx['etiqueta']] ?? null;
-                if ($geocode === '') continue;
-                $isla_id = null;
-                if ($gcd_isla && isset($islandNames[$gcd_isla])) {
-                    $isla = Isla::where('codigo', $gcd_isla)->first();
-                    $isla_id = $isla->id ?? null;
-                }
-                Lugar::updateOrCreate(['codigo_lugar' => $geocode], ['nombre' => $etiqueta, 'isla_id' => $isla_id]);
-            }
-            fclose($h);
-        }
-
-        if (($h = fopen($dataset, 'r')) !== false) {
-            $header = fgetcsv($h);
-            $idx = array_flip($header ?: []);
-            while (($row = fgetcsv($h)) !== false) {
-                $measure = $row[$idx['MEDIDAS_CODE']] ?? null;
-                if ($measure !== 'POBLACION') continue;
-                $territorio = $row[$idx['TERRITORIO#es']] ?? null;
-                $territorio_code = $row[$idx['TERRITORIO_CODE']] ?? null;
-                $ano = (int)($row[$idx['TIME_PERIOD_CODE']] ?? 0);
-                $genero = $row[$idx['SEXO#es']] ?? null;
-                $edad = $row[$idx['EDAD#es']] ?? null;
-                $value = $row[$idx['OBS_VALUE']] ?? null;
-                if ($value === '' || $value === null) continue;
-                $genero_trim = is_string($genero) ? trim($genero) : '';
-                $edad_trim = is_string($edad) ? trim($edad) : '';
-                if (strcasecmp($genero_trim, 'Total') === 0 || strcasecmp($edad_trim, 'Total') === 0) continue;
-                $poblacion = is_numeric($value) ? (int)$value : null;
-                if ($poblacion === 0) continue;
-                $lugar_id = null;
-                $isla_id = null;
-                if (is_string($territorio_code) && str_starts_with($territorio_code, 'ES')) {
-                    $isla = Isla::where('codigo', $territorio_code)->first();
-                    $isla_id = $isla->id ?? null;
-                } else {
-                    $lugar = Lugar::where('codigo_lugar', $territorio_code)->first();
-                    if ($lugar) {
-                        $lugar_id = $lugar->id;
-                        $isla_id = $lugar->isla_id;
-                    } else {
-                        if (isset($muniMap[$territorio_code])) {
-                            $gcd_isla = $muniMap[$territorio_code]['island_code'] ?? null;
-                            $isla = Isla::where('codigo', $gcd_isla)->first();
-                            $isla_id = $isla->id ?? null;
-                        }
-                        $nuevo = Lugar::updateOrCreate(['codigo_lugar' => $territorio_code], ['nombre' => $territorio, 'isla_id' => $isla_id]);
-                        $lugar_id = $nuevo->id;
-                    }
-                }
-                DB::table('population_stats')->updateOrInsert([
-                    'lugar_id' => $lugar_id,
-                    'isla_id' => $isla_id,
+                $batch[] = [
+                    'lugar_id' => $lugarMap[$tcode],
+                    'isla_id' => $lugarIsla[$tcode],
                     'ano' => $ano,
                     'genero' => $genero,
                     'edad' => $edad,
-                ], ['poblacion' => $poblacion, 'updated_at' => now(), 'created_at' => now()]);
+                    'poblacion' => $poblacion,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+                $recordCount++;
+
+                if (count($batch) >= $batchSize) {
+                    DB::table('population_stats')->insert($batch);
+                    $batch = [];
+                }
             }
-            fclose($h);
+
+            if (!empty($batch)) {
+                DB::table('population_stats')->insert($batch);
+            }
+            fclose($handle);
         }
+
+        echo "\n✅ Seeder completado - Datos 100% desde CSVs:\n";
+        echo "- Municipios: " . count($lugarMap) . "\n";
+        echo "- Islas: " . count($islaMap) . "\n";
+        echo "- Géneros: solo Hombres y Mujeres (sin Total)\n";
+        echo "- Edades: 0 a 100 individuales (sin rangos)\n";
+        echo "- Años: 2021-2025\n";
+        echo "- Registros de población insertados: {$recordCount}\n";
+        echo "- Esperados: 88 × 2 × 101 × 5 = 88,880\n";
     }
 }

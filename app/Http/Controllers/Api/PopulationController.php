@@ -141,6 +141,14 @@ class PopulationController extends Controller
         $query = PopulationStat::query()
             ->with(['isla' => fn($q) => $q->select('id', 'nombre')])
             ->whereNotNull('isla_id');
+
+        // Filtro por nombre de isla
+        if ($request->has('isla')) {
+            $nombreIsla = $request->get('isla');
+            $islaIds = Isla::where('nombre', 'LIKE', "%{$nombreIsla}%")->pluck('id');
+            $query->whereIn('isla_id', $islaIds);
+        }
+
         $this->applyFilters($query, $request);
 
         $allData = $query->get();
@@ -197,6 +205,20 @@ class PopulationController extends Controller
             ->with(['lugar' => fn($q) => $q->select('id', 'nombre', 'isla_id'), 'isla' => fn($q) => $q->select('id', 'nombre')])
             ->whereNotNull('lugar_id');
 
+        // Filtro por nombre de isla
+        if ($request->has('isla')) {
+            $nombreIsla = $request->get('isla');
+            $islaIds = Isla::where('nombre', 'LIKE', "%{$nombreIsla}%")->pluck('id');
+            $query->whereIn('isla_id', $islaIds);
+        }
+
+        // Filtro por nombre de municipio
+        if ($request->has('municipio')) {
+            $nombreMunicipio = $request->get('municipio');
+            $lugarIds = Lugar::where('nombre', 'LIKE', "%{$nombreMunicipio}%")->pluck('id');
+            $query->whereIn('lugar_id', $lugarIds);
+        }
+
         $this->applyFilters($query, $request);
 
         $allData = $query->get();
@@ -249,10 +271,28 @@ class PopulationController extends Controller
     {
         $type = $request->get('type', 'municipality'); // municipality o island
         $entityId = $request->get('id'); // lugar_id o isla_id
+        $nombre = $request->get('nombre'); // búsqueda por nombre
         $breakdown = $request->get('breakdown') === 'true'; // Desglose por municipio si type=island
 
+        // Buscar por nombre si no se proporciona ID
+        if (!$entityId && $nombre) {
+            if ($type === 'island') {
+                $isla = Isla::where('nombre', 'LIKE', "%$nombre%")->first();
+                if (!$isla) {
+                    return response()->json(['error' => "No se encontró isla con nombre '$nombre'"], 404);
+                }
+                $entityId = $isla->id;
+            } else {
+                $lugar = Lugar::where('nombre', 'LIKE', "%$nombre%")->first();
+                if (!$lugar) {
+                    return response()->json(['error' => "No se encontró municipio con nombre '$nombre'"], 404);
+                }
+                $entityId = $lugar->id;
+            }
+        }
+
         if (!$entityId) {
-            return response()->json(['error' => 'ID is required'], 400);
+            return response()->json(['error' => 'Se requiere id o nombre'], 400);
         }
 
         // Validar que la entidad existe
